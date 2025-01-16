@@ -3,29 +3,42 @@ import { NavLink } from "react-router-dom";
 import { AuthContext } from "../../Provider/AuthProvider";
 import { FaShoppingCart } from "react-icons/fa";
 import useCart from "../../Hooks/useCart";
+import useAdmin from "../../Hooks/useAdmin";
 
 
 const Navbar = () => {
 
     const { user, logOut } = useContext(AuthContext);
+    const [isAdmin] = useAdmin();
     const [cart] = useCart();
 
     const handleLogOut = () => {
         logOut()
             .then(() => { })
             .catch(error => console.log(error))
+        localStorage.removeItem('access-token');
     }
 
     const navOptions = <>
         <NavLink to={'/'}><li>HOME</li></NavLink>
         <NavLink to={'/'}><li>CONTACT US</li></NavLink>
-        <NavLink to={'/'}><li>DASHBOARD</li></NavLink>
+        <NavLink to={'/dashboard/cart'}><li>DASHBOARD</li></NavLink>
         <NavLink to={'/menu'}><li>OUR MENU</li></NavLink>
         <NavLink to={'/order/salad'}><li>ORDER FOOD</li></NavLink>
-        <NavLink to={'/secret'}><li>Secret</li></NavLink>
+        {
+            //user ? 'true' : 'false'
+            // user ? condition ? 'double true' : 'one true' : 'false'
+        }
+        {
+            user && isAdmin && <NavLink to={'/dashboard/adminHome'}><li>ADMIN HOME</li></NavLink>
+        }
+        {
+            user && !isAdmin && <NavLink to={'/dashboard/userHome'}><li>USER HOME</li></NavLink>
+        }
+
         <NavLink to={'/dashboard/cart'}>
             <li>
-                <button className="btn">
+                <button className="btn btn-sm">
                     <FaShoppingCart />
                     <div className="badge badge-secondary">+{cart.length}</div>
                 </button>

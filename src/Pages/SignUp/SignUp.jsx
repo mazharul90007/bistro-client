@@ -4,11 +4,14 @@ import { useForm } from "react-hook-form";
 import { AuthContext } from "../../Provider/AuthProvider";
 import { Link, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
+import useAxiosPublic from "../../Hooks/useAxiosPublic";
+import SocialLogin from "../../Components/SocialLogin/SocialLogin";
 
 
 const SignUp = () => {
     const { createUser, updateUserProfile } = useContext(AuthContext)
     const navigate = useNavigate();
+    const axiosPublic = useAxiosPublic();
 
     const {
         register,
@@ -18,7 +21,7 @@ const SignUp = () => {
     } = useForm()
 
     const onSubmit = (data) => {
-        console.log(data)
+        // console.log(data)
         createUser(data.email, data.password)
         .then(result =>{
             const loggedUser = result.user;
@@ -28,6 +31,28 @@ const SignUp = () => {
             updateUserProfile(data.name, data.photoURL)
             .then(()=>{})
             .catch(()=>{})
+
+            //create user entry in the database
+            const userInfo = {
+                name: data.name,
+                email: data.email
+            }
+            axiosPublic.post('/users', userInfo)
+            .then(res =>{
+                const data = res.data;
+                if(data.insertedId){
+                    console.log('user added to the database');
+                    reset();
+                    Swal.fire({
+                        position: "top-end",
+                        icon: "success",
+                        title: "Registration Successful",
+                        showConfirmButton: false,
+                        timer: 1500
+                      });
+                      navigate('/')
+                }
+            })
 
             reset();
             Swal.fire({
@@ -128,6 +153,8 @@ const SignUp = () => {
                                 <button className="btn btn-primary">Sign Up</button>
                             </div>
                             <p className=''><small>Already have an Account? <Link to={'/login'}>LogIn</Link></small></p>
+                            <div className="divider">OR</div>
+                            <SocialLogin></SocialLogin>
                         </form>
                     </div>
                 </div>

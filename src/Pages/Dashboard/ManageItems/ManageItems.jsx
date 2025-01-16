@@ -1,16 +1,17 @@
-import Swal from "sweetalert2";
-import useCart from "../../../Hooks/useCart";
 import { MdDelete } from "react-icons/md";
+import SectionTitle from "../../../Components/SectionTitle";
+import useMenu from "../../../Hooks/useMenu";
+import { FaEdit } from "react-icons/fa";
+import Swal from "sweetalert2";
 import useAxiosSecure from "../../../Hooks/useAxiosSecure";
 import { Link } from "react-router-dom";
 
 
-const Cart = () => {
-    const [cart, refetch] = useCart();
-    const totalPrice = cart.reduce((total, item) => total + item.price, 0)
+const ManageItems = () => {
+    const [menu, , refetch] = useMenu();
     const axiosSecure = useAxiosSecure();
 
-    const handleDelete = (id) => {
+    const handleDeleteItem = (item) => {
         Swal.fire({
             title: "Are you sure?",
             text: "You won't be able to revert this!",
@@ -21,35 +22,28 @@ const Cart = () => {
             confirmButtonText: "Yes, delete it!"
         }).then((result) => {
             if (result.isConfirmed) {
-
-
-                axiosSecure.delete(`/carts/${id}`)
+                axiosSecure.delete(`/menu/${item._id}`)
                     .then(res => {
                         const data = res.data;
+                        console.log(res.data)
                         if (data.deletedCount > 0) {
                             refetch();
                             Swal.fire({
-                                title: "Deleted!",
-                                text: "Your file has been deleted.",
-                                icon: "success"
+                                position: "top-end",
+                                icon: "success",
+                                title: `${item.name} has been deleted`,
+                                showConfirmButton: false,
+                                timer: 1500
                             });
                         }
                     })
+
             }
         });
     }
     return (
         <div>
-            <div className="flex items-center justify-evenly">
-                <h2 className="text-2xl">Items: {cart.length}</h2>
-                <h2 className="text-2xl">Total Price: {totalPrice}</h2>
-                {cart.length ? <Link to={'/dashboard/payment'}>
-                    <button className="btn btn-primary">Pay</button>
-                </Link>
-                    :
-                    <button disabled={!cart.length} className="btn btn-primary">Pay</button>
-                }
-            </div>
+            <SectionTitle heading={'Manage All Items'} subHeading={'Hurry Up'}></SectionTitle>
             <div>
                 <div className="overflow-x-auto">
                     <table className="table w-full">
@@ -60,36 +54,44 @@ const Cart = () => {
                                     #
                                 </th>
                                 <th>Image</th>
-                                <th>Name</th>
+                                <th>Item Name</th>
                                 <th>Price</th>
-                                <th>Action</th>
+                                <th>Update</th>
+                                <th>Delete</th>
                             </tr>
                         </thead>
                         <tbody>
                             {
-                                cart.map((item, index) =>
+                                menu.map((item, index) =>
                                     <tr key={item._id}>
-                                        <th>
+                                        <td>
                                             {index + 1}
-                                        </th>
+                                        </td>
                                         <td>
                                             <div className="flex items-center gap-3">
                                                 <div className="avatar">
-                                                    <div className="mask mask-squircle h-12 w-12">
+                                                    <div className=" h-16 w-16 rounded">
                                                         <img
                                                             src={item.image}
                                                             alt="Avatar Tailwind CSS Component" />
                                                     </div>
                                                 </div>
+
                                             </div>
                                         </td>
                                         <td>{item.name}</td>
-                                        <td>${item.price}</td>
-                                        <th>
-                                            <button onClick={() => handleDelete(item._id)} className="btn btn-ghost text-red-600 text-xl"><MdDelete /></button>
-                                        </th>
+                                        <td>$ {item.price}</td>
+                                        <td>
+                                            <Link to={`/dashboard/updateItem/${item._id}`}>
+                                                <button className="btn bg-orange-200 text-red-600 text-xl"><FaEdit></FaEdit></button>
+                                            </Link>
+                                        </td>
+                                        <td>
+                                            <button onClick={() => handleDeleteItem(item)} className="btn bg-red-600 text-white hover:text-red-600  text-xl"><MdDelete /></button>
+                                        </td>
                                     </tr>)
                             }
+
                         </tbody>
                     </table>
                 </div>
@@ -98,4 +100,4 @@ const Cart = () => {
     );
 };
 
-export default Cart;
+export default ManageItems;
